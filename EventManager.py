@@ -49,9 +49,15 @@ class EventList:
 		self.sf = conn.sf_login()
 
 	def get_events_after(self):
-		query = "SELECT Id, Name FROM Contact WHERE CreatedDate > " + self.date
+		query = "SELECT Id, Name, eb4sf__Created__c, eb4sf__Description__c, eb4sf__Online_Event__c, Areas_of_Impact__c FROM eb4sf__Eventbrite_Event__c WHERE CreatedDate > " + self.date
 		resp = self.sf.query_all(query)['records']
 		df = pd.DataFrame(resp)
+		df = df.drop(['attributes'], axis = 1)
 		return df
-
-
+	
+	def get_attenddess_after(self):
+		query = "SELECT Id, Name, eb4sf__Event_Id__c, eb4sf__Email__c, eb4sf__First_Name__c, eb4sf__Last_Name__c, eb4sf__Account__c FROM eb4sf__Eventbrite_Order__c WHERE CreatedDate > " + self.date
+		resp = self.sf.query_all(query)['records']
+		df = pd.DataFrame(resp)
+		df = df.drop(['attributes'], axis = 1)
+		return df

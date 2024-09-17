@@ -12,7 +12,7 @@ class User():
         credentials_file = open(".credentials.json")
         credentials = json.load(credentials_file)
         try:
-            self.userName = credentials[self.user]['user']
+            self.userName = credentials[self.user]['user'] 
             self.password = credentials[self.user]['password']
             self.token = credentials[self.user]['token']
 
