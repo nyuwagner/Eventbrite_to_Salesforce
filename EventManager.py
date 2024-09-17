@@ -52,6 +52,7 @@ class EventList:
 		query = "SELECT Id, Name, eb4sf__Created__c, eb4sf__Description__c, eb4sf__Online_Event__c, Areas_of_Impact__c FROM eb4sf__Eventbrite_Event__c WHERE CreatedDate > " + self.date
 		resp = self.sf.query_all(query)['records']
 		df = pd.DataFrame(resp)
+		df = df.rename(columns={"Name": "eb4sf__Event_Id__c"})
 		df = df.drop(['attributes'], axis = 1)
 		return df
 	
