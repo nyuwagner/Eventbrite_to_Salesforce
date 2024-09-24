@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import json
 from credentials_connection import User
 
 focus_area_lst = ['Cities', \
@@ -62,3 +63,34 @@ class EventList:
 		df = pd.DataFrame(resp)
 		df = df.drop(['attributes'], axis = 1)
 		return df
+	
+	def match_domains(self, df):
+		for index, row in df.iterrows():
+			df.at[index,'domain'] = row['eb4sf__Email__c'].split('@')[1]
+
+		f = open("domains.json")
+		data = f.read().replace('\n', '')
+		domains = json.loads(data)
+
+		unique_domains = df[~df['domain'].isin(domains)]
+
+		domain_dict = {}
+		for el in unique_domains['domain']:
+			query = "SELECT Id FROM Account WHERE Website like '%" + str.strip(el) + "%' OR Domain__c = '" + str.strip(el) + "'"
+			try: 
+				resp = self.sf.query_all(query)['records']
+				print(str(len(resp)) + " " + str(el))
+				if(len(resp)>0):
+					for sf_id in resp:
+						if(len(domain_dict.get(el))>0):
+							domain_dict.update({el: domain_dict.get(el).append(sf_id)})
+						else:
+							domain_dict.update({el: [sf_id['Id']]})
+			except:
+				print("Fail")
+				print(el)
+
+		print(domain_dict)
+			
+
+

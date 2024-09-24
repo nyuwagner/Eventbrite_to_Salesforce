@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import json
 
 attendees = pd.read_csv('test.csv')
 print(attendees.head())
@@ -11,9 +13,12 @@ attendees['domain'] = ''
 for index, row in attendees.iterrows():
     attendees.at[index,'domain'] = row['eb4sf__Email__c'].split('@')[1]
 
-no_nyu = attendees[attendees['domain'] != 'nyu.edu']
-no_gmail = no_nyu[no_nyu['domain'] != 'gmail.com']
+f = open("domains.json")
+data = f.read().replace('\n', '')
+domains = json.loads(data)
 
-print(len(no_gmail))
-for index, row in no_gmail.iterrows():
-    print(row['domain'])
+unique_domains = attendees[~attendees['domain'].isin(domains)]
+
+print(len(unique_domains))
+# for index, row in unique_domains.iterrows():
+#     print(row['domain'])
