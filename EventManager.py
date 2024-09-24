@@ -63,6 +63,19 @@ class EventList:
 		df = pd.DataFrame(resp)
 		df = df.drop(['attributes'], axis = 1)
 		return df
+
+	def match_contacts(self, df):
+		df['SF_ID'] = ''
+		for index, row in df.iterrows():
+			query = "SELECT Id, AccountId FROM Contact WHERE Email = '" + row['eb4sf__Email__c'] + "'"
+			try:
+				resp = self.sf.query_all(query)['records']
+				if(len(resp)>0):
+					df.at[index, 'SF_ID'] = resp[0]['Id']
+			except Exception as e:
+				print(e)
+		
+		return df[df['SF_ID'] != '']
 	
 	def match_domains(self, df):
 		for index, row in df.iterrows():
@@ -73,24 +86,29 @@ class EventList:
 		domains = json.loads(data)
 
 		unique_domains = df[~df['domain'].isin(domains)]
+		print("### Unique Domains ###")
+		print(len(unique_domains))
 
 		domain_dict = {}
-		for el in unique_domains['domain']:
-			query = "SELECT Id FROM Account WHERE Website like '%" + str.strip(el) + "%' OR Domain__c = '" + str.strip(el) + "'"
+		print(unique_domains.columns)
+		for index, row in unique_domains.iterrows():
+			#print(row['domain'])
+			query = "SELECT Id, Number_of_Contacts_Plus_Related__c FROM Account WHERE Website like '%" + row['domain'] + "%' OR Domain__c = '" + row['domain'] + "'"
 			try: 
 				resp = self.sf.query_all(query)['records']
-				print(str(len(resp)) + " " + str(el))
 				if(len(resp)>0):
-					for sf_id in resp:
-						if(len(domain_dict.get(el))>0):
-							domain_dict.update({el: domain_dict.get(el).append(sf_id)})
-						else:
-							domain_dict.update({el: [sf_id['Id']]})
-			except:
-				print("Fail")
-				print(el)
+					max = 0
+					for acc in resp:
+						if(acc['Number_of_Contacts_Plus_Related__c'] > max):
+							max = acc['Number_of_Contacts_Plus_Related__c']
+							domain_dict.update({index: (acc['Id'], acc['Number_of_Contacts_Plus_Related__c'])})
+			except Exception as e:
+				print(e)
+				print(index)
 
-		print(domain_dict)
-			
+		for key, value in domain_dict.items():
+			unique_domains.at[key, 'AccountId'] = value[0]
+
+		return unique_domains
 
 

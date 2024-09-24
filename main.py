@@ -14,5 +14,7 @@ attendees.to_csv('attendees.csv')
 
 df = events.set_index('eb4sf__Event_Id__c').join(attendees.set_index('eb4sf__Event_Id__c'), on='eb4sf__Event_Id__c', how='right', lsuffix='ev', rsuffix='per')
 
-backlog.match_domains(df)
+contacts = backlog.match_contacts(df)
+updates = backlog.match_domains(contacts)
+print(len(updates))
 #df.to_csv('test.csv')
