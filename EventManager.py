@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 import json
 from credentials_connection import User
+import logging
+
+event_logger = logging.getLogger(__name__)
+logging.basicConfig(filename='event.log', encoding='utf-8', level=logging.INFO, filemode='w')
 
 focus_area_lst = ['Cities', \
 	'Communication Skills', \
@@ -18,7 +22,7 @@ focus_area_lst = ['Cities', \
 	'Program Evaluation']
 
 class Event:
-	
+
 	def __init__(self, event_id, name):
 		self.name = name
 		self.event_id = event_id
@@ -32,14 +36,14 @@ class Event:
 
 	def format_focus_areas(self, focus_str):
 		if(focus_str != ''):
-			print('Focus Areas Already Populated')
+			logging.info('Focus Areas Already Populated')
 
 		else:
 			for el in focus_area_lst:
 				if(el in focus_str):
 					self.focus_areas = self.focus_areas + el + ';'
 
-		print('success')
+		logging.info('Focus Areas populated')
 
 class EventList:
 
@@ -73,7 +77,7 @@ class EventList:
 				if(len(resp)>0):
 					df.at[index, 'SF_ID'] = resp[0]['Id']
 			except Exception as e:
-				print(e)
+				logging.debug(e)
 		
 		return df[df['SF_ID'] != '']
 	
@@ -86,11 +90,12 @@ class EventList:
 		domains = json.loads(data)
 
 		unique_domains = df[~df['domain'].isin(domains)]
-		print("### Unique Domains ###")
-		print(len(unique_domains))
+		logging.info("### Unique Domains ###")
+		logging.info(len(unique_domains))
 
 		domain_dict = {}
 		print(unique_domains.columns)
+
 		for index, row in unique_domains.iterrows():
 			#print(row['domain'])
 			query = "SELECT Id, Number_of_Contacts_Plus_Related__c FROM Account WHERE Website like '%" + row['domain'] + "%' OR Domain__c = '" + row['domain'] + "'"
@@ -103,8 +108,7 @@ class EventList:
 							max = acc['Number_of_Contacts_Plus_Related__c']
 							domain_dict.update({index: (acc['Id'], acc['Number_of_Contacts_Plus_Related__c'])})
 			except Exception as e:
-				print(e)
-				print(index)
+				logging.error("error: %s at index: %s", e, str(index))
 
 		for key, value in domain_dict.items():
 			unique_domains.at[key, 'AccountId'] = value[0]

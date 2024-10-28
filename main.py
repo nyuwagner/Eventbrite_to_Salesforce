@@ -1,7 +1,7 @@
 import EventManager
 import pandas as pd
 
-backlog = EventManager.EventList("2022-06-01T00:00:00Z")
+backlog = EventManager.EventList("2024-06-01T00:00:00Z")
 
 # Make CSV to assess Damages
 events = backlog.get_events_after()
