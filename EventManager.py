@@ -75,11 +75,21 @@ class EventList:
 			try:
 				resp = self.sf.query_all(query)['records']
 				if(len(resp)>0):
-					df.at[index, 'SF_ID'] = resp[0]['Id']
+					#print(resp[0]['Id'])
+					#print(index)
+					df.at[index, 'SF_ID'] =  resp[0]['Id']
 			except Exception as e:
 				logging.debug(e)
 		
-		return df[df['SF_ID'] != '']
+		return df
+	
+	def update_contacts(self,df):
+		for index, row in df[df['SF_ID'] != ''].iterrows():
+			try:
+				self.sf.Contact.update(row['SF_ID'], {'Email': row['eb4sf__Email__c']})
+			except Exception as e:
+				print(e)
+				print(row['eb4sf__Email__c'])
 	
 	def match_domains(self, df):
 		for index, row in df.iterrows():
